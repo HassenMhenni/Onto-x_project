@@ -181,7 +181,7 @@ Visit `http://localhost:8000` to use the browser-based interface.
 ## 4. Screenshot of the Application
 
 ![Screenshot of FastAPI Interface](screenshots\fast_api_screenshot.png)
-![Screenshot of FastAPI Interface](screenshots\fast_api_screenshot.png)
+![Alt text](screenshots\fast_api_screenshot.png "Screenshot of FastAPI Interface")
 
 
 
