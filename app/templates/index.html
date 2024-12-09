@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Onto-X Browser</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #result {
+        margin-top: 20px;
+        white-space: pre-wrap;
+      }
+      #autocomplete-list {
+        border: 1px solid #ddd;
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: white;
+        position: absolute;
+        z-index: 1000;
+        width: 300px;
+      }
+      #autocomplete-list div {
+        padding: 10px;
+        cursor: pointer;
+      }
+      #autocomplete-list div:hover {
+        background-color: #f1f1f1;
+      }
+    </style>
+</head>
+<body>
+    <h1>Onto-X Browser</h1>
+    <label for="entitySearch">Search for an entity:</label>
+    <input type="text" id="entitySearch" autocomplete="off" placeholder="Start typing to search..." />
+    <div id="autocomplete-list"></div>
+
+    <div id="result"></div>
+
+    <script>
+      const searchInput = document.getElementById('entitySearch');
+      const autocompleteList = document.getElementById('autocomplete-list');
+      const resultDiv = document.getElementById('result');
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value;
+        if (query) {
+          fetch(`/search?query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+              autocompleteList.innerHTML = "";
+              data.suggestions.forEach(label => {
+                const item = document.createElement("div");
+                item.textContent = label;
+                item.addEventListener("click", () => {
+                  searchInput.value = label;
+                  autocompleteList.innerHTML = "";
+                  fetchAncestors(label);
+                });
+                autocompleteList.appendChild(item);
+              });
+            });
+        } else {
+          autocompleteList.innerHTML = "";
+        }
+      });
+
+      searchInput.addEventListener("blur", () => {
+        setTimeout(() => autocompleteList.innerHTML = "", 200);
+      });
+
+      function fetchAncestors(label) {
+        fetch(`/ancestors?query=${encodeURIComponent(label)}`)
+          .then(response => {
+            if (!response.ok) throw new Error("Entity not found");
+            return response.json();
+          })
+          .then(data => {
+            let text = "Ancestors for " + label + ":\n\n";
+            for (const [key, depth] of Object.entries(data)) {
+              text += `${key}: ${depth}\n`;
+            }
+            resultDiv.textContent = text;
+          })
+          .catch(err => {
+            resultDiv.textContent = "Error: " + err.message;
+          });
+      }
+    </script>
+</body>
+</html>
